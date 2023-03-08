@@ -6,6 +6,7 @@ import random
 import PyQt5
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QApplication
 
 field_size = 5
@@ -40,6 +41,10 @@ class Frame:
         field[i+2][j+1] = new_field[i+1][j+2]
         field[i+2][j+2] = new_field[i][j+2]
 
+    def reverse_rotate(self, field):
+        for i in range(3):
+            self.rotate(field)
+
 class GameField:
     def __init__(self):
         super().__init__()
@@ -53,6 +58,12 @@ class GameField:
                 else:
                     self.field[i].append(Cell(Color.YELLOW))
         self.shuffle()
+
+    def rotate(self):
+        self.frame.rotate(self.field)
+
+    def reverse_rotate(self):
+        self.frame.reverse_rotate(self.field)
 
     def shuffle(self):
         start_i = self.frame.i
@@ -108,6 +119,23 @@ class MyPaintWidget(PyQt5.QtWidgets.QWidget):
 
         self.show()
 
+    def keyPressEvent(self, e):
+        k = e.key()
+        if k == Qt.Key_X:
+            self.field.rotate()
+        if k == Qt.Key_Z:
+            self.field.reverse_rotate()
+        if k == Qt.Key_W and self.field.frame.i > 0:
+            self.field.frame.i -= 1
+        if k == Qt.Key_S and self.field.frame.i < field_size-3:
+            self.field.frame.i += 1
+        if k == Qt.Key_A and self.field.frame.j > 0:
+            self.field.frame.j -= 1
+        if k == Qt.Key_D and self.field.frame.j < field_size-3:
+            self.field.frame.j += 1
+        self.rows = self.field.check_rows()
+        self.update()
+
     def shuffle_btn_clicked(self):
         self.field.shuffle()
         self.rows = self.field.check_rows()
@@ -128,18 +156,18 @@ class MyPaintWidget(PyQt5.QtWidgets.QWidget):
         pen = QtGui.QPen(QtGui.QColor(255, 255, 255))
         pen.setWidth(2)
         p.setPen(pen)
-        p.drawRect(100 + cell_size//2 + self.field.frame.i * cell_size, 100 + cell_size//2 + self.field.frame.j*cell_size,
-                   cell_size*2, cell_size*2)
+        p.drawRect(100 + cell_size//2 + self.field.frame.j * cell_size, 100 + cell_size//2 +
+                   self.field.frame.i*cell_size, cell_size*2, cell_size*2)
 
     def draw_field(self, p):
-        for i in range(len(self.field.field)):
-            for j in range(len(self.field.field[0])):
+        for i in range(field_size):
+            for j in range(field_size):
                 cell = self.field.field[i][j]
                 if cell.color == Color.RED:
                     p.setBrush(QtCore.Qt.red)
                 else:
                     p.setBrush(QtCore.Qt.yellow)
-                p.drawRect(100+i*cell_size, 100+j*cell_size, cell.size, cell.size)
+                p.drawRect(100+j*cell_size, 100+i*cell_size, cell.size, cell.size)
 
 
 if __name__ == '__main__':
