@@ -1,3 +1,5 @@
+# W - up, S - down, A - left, D - right, K - rotate left, L - rotate right
+
 import copy
 import sys
 from enum import Enum
@@ -106,6 +108,14 @@ class MyPaintWidget(PyQt5.QtWidgets.QWidget):
         self.setGeometry(100, 100, 800, 600)
         self.painter = QtGui.QPainter(self)
 
+        self.label = QtWidgets.QLabel('0', self)
+        self.label.move(550, 350)
+        self.timer = QtCore.QTimer(self)
+        self.label.setFont(QFont("Times New Roman", 20))
+        self.timer.timeout.connect(self.timer_tick)
+        self.timer.setInterval(1000)
+        self.timer.start()
+
         self.shuffle_btn = QtWidgets.QPushButton('shuffle', self)
         self.shuffle_btn.move(550, 150)
         self.shuffle_btn.setFont(QFont("Times New Roman", 20))
@@ -113,17 +123,20 @@ class MyPaintWidget(PyQt5.QtWidgets.QWidget):
 
         self.field = GameField()
         self.rows = self.field.check_rows()
-        self.label = QtWidgets.QLabel("rows: "+str(self.rows), self)
-        self.label.move(550, 250)
-        self.label.setFont(QFont("Times New Roman", 20))
+        self.counter = QtWidgets.QLabel("rows: "+str(self.rows), self)
+        self.counter.move(550, 250)
+        self.counter.setFont(QFont("Times New Roman", 20))
 
         self.show()
 
+    def timer_tick(self):
+        self.label.setText(str(1 + int(self.label.text())))
+
     def keyPressEvent(self, e):
         k = e.key()
-        if k == Qt.Key_X:
+        if k == Qt.Key_L:
             self.field.rotate()
-        if k == Qt.Key_Z:
+        if k == Qt.Key_K:
             self.field.reverse_rotate()
         if k == Qt.Key_W and self.field.frame.i > 0:
             self.field.frame.i -= 1
@@ -148,7 +161,7 @@ class MyPaintWidget(PyQt5.QtWidgets.QWidget):
         self.painter.setPen(pen)
         self.draw_field(self.painter)
         self.draw_frame(self.painter)
-        self.label.setText("rows: "+str(self.rows))
+        self.counter.setText("rows: "+str(self.rows))
         self.painter.end()
 
     def draw_frame(self, p):
